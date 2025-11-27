@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SphereControl AI | Futuristic Hand Gesture Technology</title>
+    <meta name="description" content="Next-generation hand gesture control technology for immersive 3D interaction">
+    <meta name="author" content="Group 7: Jan G. Firmanes, Amiel John M. Caberte, Cathlyn C. Centeno, Shairen Jade Rivera, Ron Carlo S. Alag">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    
+    <style>
+        /* Futuristic Design Variables */
+        :root {
+            --primary: #0a0a12;
+            --secondary: #0f0f1a;
+            --accent: #00f5ff;
+            --accent-glow: 0 0 10px rgba(0, 245, 255, 0.7);
+            --accent-secondary: #ff00e6;
+            --accent-secondary-glow: 0 0 10px rgba(255, 0, 230, 0.5);
+            --text: #ffffff;
+            --text-secondary: #b0b0d0;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success: #00ff9d;
+            --warning: #ffcc00;
+            --error: #ff3366;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Rajdhani', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 245, 255, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 230, 0.05) 0%, transparent 20%);
+        }
+        
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(90deg, transparent 99%, rgba(0, 245, 255, 0.03) 100%),
+                linear-gradient(0deg, transparent 99%, rgba(0, 245, 255, 0.03) 100%);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(50px, 50px); }
+        }
+        
+        .floating-orbs {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.1;
+            animation: float 15s infinite ease-in-out;
+        }
+        
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: var(--accent);
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+        
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-secondary);
+            bottom: 10%;
+            right: 10%;
+            animation-delay: -5s;
+        }
+        
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--success);
+            top: 50%;
+            left: 80%;
+            animation-delay: -10s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -20px) scale(1.1); }
+            50% { transform: translate(-15px, 10px) scale(0.9); }
+            75% { transform: translate(10px, 15px) scale(1.05); }
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background-color: rgba(10, 10, 18, 0.8);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--glass-border);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: var(--accent-glow);
+        }
+        
+        .logo-text {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 500;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 0;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover {
+            color: var(--accent);
+            text-shadow: 0 0 8px rgba(0, 245, 255, 0.5);
+        }
+        
+        .nav-links a:hover:after {
+            width: 100%;
+        }
+        
+        .mobile-menu {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--accent);
+        }
+        
+        /* Hero Section */
+        .hero {
+            padding: 8rem 0 6rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 245, 255, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            color: var(--text-secondary);
+        }
+        
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            color: var(--primary);
+            padding: 1rem 2.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow: var(--accent-glow);
+        }
+        
+        .cta-button:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-secondary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: -1;
+        }
+        
+        .cta-button:hover:before {
+            opacity: 1;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 245, 255, 0.4);
+        }
+        
+        .secondary-button {
+            background: transparent;
+            color: var(--accent);
+            border: 2px solid var(--accent);
+            box-shadow: var(--accent-glow);
+        }
+        
+        .secondary-button:hover {
+            background: rgba(0, 245, 255, 0.1);
+        }
+        
+        /* Demo Section */
+        .demo {
+            padding: 6rem 0;
+            background-color: var(--secondary);
+            position: relative;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text);
+            position: relative;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            width: 100px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+            box-shadow: var(--accent-glow);
+        }
+        
+        .section-subtitle {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 3rem;
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+        }
+        
+        .demo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .demo-screen {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--glass-border);
+            background: #000;
+        }
+        
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        #output_canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        
+        #sphereCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        .demo-controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .control-hints {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .control-hint {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--glass);
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .hint-icon {
+            font-size: 1.25rem;
+        }
+        
+        .hint-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        
+        .status-panel {
+            background-color: var(--glass);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            margin-top: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .status-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .status-item:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+        }
+        
+        .status-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .status-value {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: var(--accent);
+            margin-top: 0.5rem;
+            text-shadow: var(--accent-glow);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 6rem 0;
+            background-color: var(--primary);
+            position: relative;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+        }
+        
+        .feature-item {
+            background-color: var(--glass);
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .feature-item:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+        }
+        
+        .feature-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .feature-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 2rem;
+            box-shadow: var(--accent-glow);
+        }
+        
+        .feature-item h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        
+        .feature-item p {
+            color: var(--text-secondary);
+        }
+        
+        /* Team Section */
+        .team {
+            padding: 6rem 0;
+            background-color: var(--secondary);
+            position: relative;
+        }
+        
+        .team-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+        
+        .team-member {
+            background-color: var(--glass);
+            padding: 2.5rem 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .team-member:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+        }
+        
+        .team-member:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .member-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 1.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 2.5rem;
+            font-weight: bold;
+            box-shadow: var(--accent-glow);
+        }
+        
+        .team-member h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .team-member p {
+            color: var(--text-secondary);
+        }
+        
+        /* Footer */
+        footer {
+            background-color: var(--primary);
+            color: white;
+            padding: 4rem 0 2rem;
+            border-top: 1px solid var(--glass-border);
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .footer-logo-text {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .footer-about p {
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-links h3, .footer-contact h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+        
+        .footer-links ul {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--accent);
+        }
+        
+        .footer-contact p {
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: rgba(10, 10, 18, 0.95);
+                flex-direction: column;
+                padding: 1rem 0;
+                box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+                backdrop-filter: blur(10px);
+                border-top: 1px solid var(--glass-border);
+            }
+            
+            .nav-links.active {
+                display: flex;
+            }
+            
+            .nav-links li {
+                margin: 0;
+                text-align: center;
+                padding: 0.8rem 0;
+            }
+            
+            .mobile-menu {
+                display: block;
+            }
+            
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .demo-screen {
+                height: 400px;
+            }
+            
+            .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features-grid, .team-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+        
+        /* Additional Components */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner {
+            border: 5px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 5px solid var(--accent);
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+            box-shadow: var(--accent-glow);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .instructions {
+            background-color: var(--glass);
+            padding: 2rem;
+            border-radius: 12px;
+            margin-top: 2rem;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .instructions h3 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            text-shadow: var(--accent-glow);
+        }
+        
+        .instructions ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .instructions li {
+            margin-bottom: 0.8rem;
+            color: var(--text-secondary);
+        }
+        
+        .inactive-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 1.5rem;
+            z-index: 10;
+            border-radius: 12px;
+        }
+        
+        .browser-warning {
+            display: none;
+            background-color: var(--warning);
+            color: var(--primary);
+            padding: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            border-radius: 6px;
+        }
+
+        /* WebSocket Status Indicator */
+        .websocket-status {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: var(--glass);
+            color: var(--text);
+            padding: 10px 15px;
+            border-radius: 6px;
+            z-index: 1000;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .status-connected {
+            background-color: var(--success);
+            box-shadow: 0 0 10px var(--success);
+        }
+
+        .status-disconnected {
+            background-color: var(--error);
+            box-shadow: 0 0 10px var(--error);
+        }
+
+        .status-connecting {
+            background-color: var(--warning);
+            box-shadow: 0 0 10px var(--warning);
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+    
+    <!-- Import Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="grid-lines"></div>
+        <div class="floating-orbs">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+    </div>
+    
+    <div class="browser-warning" id="browserWarning">
+        For the best experience, please use a modern browser like Chrome, Firefox, or Edge with WebRTC support.
+    </div>
+    
+    <!-- WebSocket Status Indicator -->
+    <div class="websocket-status" id="websocketStatus">
+        <span class="status-indicator status-disconnected"></span>
+        <span>ESP32: Disconnected</span>
+    </div>
+    
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <div class="logo-icon">SC</div>
+                    <div class="logo-text">SphereControl AI</div>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#team">Team</a></li>
+                </ul>
+                <div class="mobile-menu">☰</div>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="hero-content">
+                <h1>Next-Gen Gesture Control</h1>
+                <p>Experience the future of human-computer interaction with our advanced hand gesture technology. Control digital environments with intuitive, natural movements.</p>
+                <div class="button-container">
+                    <button id="startButton" class="cta-button">Launch Demo</button>
+                    <button id="connectESP32Button" class="cta-button secondary-button">Connect ESP32</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="demo" id="demo">
+        <div class="container">
+            <h2 class="section-title">Interactive Demo</h2>
+            <p class="section-subtitle">Experience our hand gesture technology firsthand. Control the 3D sphere using simple, intuitive gestures.</p>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Initializing camera and hand tracking...</p>
+            </div>
+            
+            <div class="demo-container" id="demoContainer" style="display: none;">
+                <div class="demo-screen">
+                    <video id="webcam" playsinline></video>
+                    <canvas id="output_canvas"></canvas>
+                    <canvas id="sphereCanvas"></canvas>
+                    <div class="inactive-overlay" id="inactiveOverlay" style="display: none;">
+                        <div style="text-align: center;">
+                            <p>Webcam is inactive</p>
+                            <p>Click "Launch Demo" to begin</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="demo-controls">
+                    <button id="stopButton" class="cta-button secondary-button" style="display: none;">Stop Demo</button>
+                    <button id="disconnectESP32Button" class="cta-button secondary-button" style="display: none;">Disconnect ESP32</button>
+                </div>
+                
+                <div class="control-hints">
+                    <div class="control-hint">
+                        <span class="hint-icon">🤏</span>
+                        <span class="hint-text">Pinch to Resize</span>
+                    </div>
+                    <div class="control-hint">
+                        <span class="hint-icon">👆</span>
+                        <span class="hint-text">Touch Center to Change Color</span>
+                    </div>
+                    <div class="control-hint">
+                        <span class="hint-icon">✋</span>
+                        <span class="hint-text">Move Hand to Rotate</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="status-panel">
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span>Sphere Radius</span>
+                        <div class="status-value" id="radiusValue">1.0</div>
+                    </div>
+                    <div class="status-item">
+                        <span>Rotation X</span>
+                        <div class="status-value" id="rotationXValue">0.0°</div>
+                    </div>
+                    <div class="status-item">
+                        <span>Rotation Y</span>
+                        <div class="status-value" id="rotationYValue">0.0°</div>
+                    </div>
+                    <div class="status-item">
+                        <span>Current Color</span>
+                        <div class="status-value" id="colorValue">Cyan</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="instructions">
+                <h3>How to Use the Demo</h3>
+                <ol>
+                    <li>Click "Launch Demo" to begin the demonstration</li>
+                    <li>Allow camera access when prompted by your browser</li>
+                    <li>Use your left hand to control the sphere:
+                        <ul>
+                            <li>Pinch thumb and index finger together to resize the sphere</li>
+                            <li>Touch the center of the screen with your middle finger to change colors</li>
+                        </ul>
+                    </li>
+                    <li>Use your right hand position to rotate the sphere in 3D space</li>
+                    <li>Click "Connect ESP32" to integrate with external hardware</li>
+                </ol>
+                <p><strong>Tip:</strong> Ensure your hands are clearly visible to the camera with adequate lighting for optimal tracking.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <div class="container">
+            <h2 class="section-title">Advanced Capabilities</h2>
+            <p class="section-subtitle">Our technology pushes the boundaries of human-computer interaction with cutting-edge features.</p>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🤲</div>
+                    <h3>Intuitive Gestures</h3>
+                    <p>Natural hand movements translate directly to digital interactions with minimal learning curve.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔧</div>
+                    <h3>Hardware Integration</h3>
+                    <p>Seamlessly connect with external devices like ESP32 for expanded functionality.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Real-time Processing</h3>
+                    <p>Advanced algorithms ensure immediate response to user gestures with no perceptible delay.</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🎯</div>
+                    <h3>Precision Tracking</h3>
+                    <p>High-accuracy hand landmark detection for precise control of digital objects.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="team" id="team">
+        <div class="container">
+            <h2 class="section-title">Development Team</h2>
+            <p class="section-subtitle">This innovative project was developed by Group 7, demonstrating expertise in computer vision, 3D graphics, and interactive systems.</p>
+            
+            <div class="team-grid">
+                <div class="team-member">
+                    <div class="member-icon">JG</div>
+                    <h3>Jan G. Firmanes</h3>
+                    <p>Project Lead & Developer</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-icon">AJ</div>
+                    <h3>Amiel John M. Caberte</h3>
+                    <p>Computer Vision Specialist</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-icon">CC</div>
+                    <h3>Cathlyn C. Centeno</h3>
+                    <p>UI/UX Designer</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-icon">SJ</div>
+                    <h3>Shairen Jade Rivera</h3>
+                    <p>3D Graphics Developer</p>
+                </div>
+                <div class="team-member">
+                    <div class="member-icon">RC</div>
+                    <h3>Ron Carlo S. Alag</h3>
+                    <p>Hardware Integration Specialist</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-about">
+                    <div class="footer-logo">
+                        <div class="footer-logo-icon">SC</div>
+                        <div class="footer-logo-text">SphereControl AI</div>
+                    </div>
+                    <p>Pioneering the future of intuitive human-computer interaction through advanced hand gesture recognition technology.</p>
+                </div>
+                
+                <div class="footer-links">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#demo">Demo</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#team">Team</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-contact">
+                    <h3>Contact</h3>
+                    <p>📧 info@spherecontrol.ai</p>
+                    <p>📞 +1 (555) 123-4567</p>
+                    <p>📍 123 Innovation Drive, Tech City</p>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>© 2023 SphereControl AI. All rights reserved. | Developed by Group 7: Jan G. Firmanes, Amiel John M. Caberte, Cathlyn C. Centeno, Shairen Jade Rivera, Ron Carlo S. Alag</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // WebSocket configuration - Connect directly to ESP32
+        const WEBSOCKET_SERVER = 'ws://192.168.100.4:81'; // ESP32's IP address and port
+        
+        // WebSocket variables
+        let websocket = null;
+        let isWebSocketConnected = false;
+        let lastSentColor = null;
+        let autoReconnect = false;
+
+        function checkCompatibility() {
+            const hasWebRTC = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
+            const hasCanvas = !!window.CanvasRenderingContext2D;
+            const hasWebGL = (function() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    return !!(window.WebGLRenderingContext && 
+                        (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')));
+                } catch(e) {
+                    return false;
+                }
+            })();
+            
+            if (!hasWebRTC || !hasCanvas || !hasWebGL) {
+                document.getElementById('browserWarning').style.display = 'block';
+            }
+        }
+        
+        // WebSocket functions
+        function connectWebSocket() {
+            try {
+                console.log('Connecting to ESP32 WebSocket:', WEBSOCKET_SERVER);
+                updateWebSocketStatus('connecting', 'ESP32: Connecting...');
+                websocket = new WebSocket(WEBSOCKET_SERVER);
+                
+                websocket.onopen = function(event) {
+                    console.log('WebSocket connected to ESP32');
+                    isWebSocketConnected = true;
+                    autoReconnect = true;
+                    updateWebSocketStatus('connected', 'ESP32: Connected');
+                    updateESP32Buttons(true);
+                    
+                    // Send current color immediately after connection
+                    handleColorChange();
+                };
+                
+                websocket.onclose = function(event) {
+                    console.log('WebSocket disconnected from ESP32');
+                    isWebSocketConnected = false;
+                    updateWebSocketStatus('disconnected', 'ESP32: Disconnected');
+                    updateESP32Buttons(false);
+                    
+                    // Attempt to reconnect only if autoReconnect is enabled
+                    if (autoReconnect) {
+                        setTimeout(connectWebSocket, 3000);
+                    }
+                };
+                
+                websocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    isWebSocketConnected = false;
+                    updateWebSocketStatus('disconnected', 'ESP32: Connection Error');
+                    updateESP32Buttons(false);
+                };
+                
+                websocket.onmessage = function(event) {
+                    console.log('Received from ESP32:', event.data);
+                    
+                    // Handle ESP32 messages
+                    if (event.data === 'ESP32_CONNECTED') {
+                        console.log('ESP32 confirmed connection');
+                        updateWebSocketStatus('connected', 'ESP32: Connected');
+                    }
+                };
+                
+            } catch (error) {
+                console.error('Failed to create WebSocket:', error);
+                isWebSocketConnected = false;
+                updateWebSocketStatus('disconnected', 'ESP32: Connection Failed');
+                updateESP32Buttons(false);
+            }
+        }
+
+        function disconnectWebSocket() {
+            autoReconnect = false;
+            if (websocket) {
+                websocket.close();
+                websocket = null;
+            }
+            isWebSocketConnected = false;
+            updateWebSocketStatus('disconnected', 'ESP32: Disconnected');
+            updateESP32Buttons(false);
+        }
+
+        function updateWebSocketStatus(status, message) {
+            const statusElement = document.getElementById('websocketStatus');
+            const indicator = statusElement.querySelector('.status-indicator');
+            
+            // Remove all status classes
+            indicator.classList.remove('status-connected', 'status-disconnected', 'status-connecting');
+            
+            // Add appropriate status class
+            switch(status) {
+                case 'connected':
+                    indicator.classList.add('status-connected');
+                    break;
+                case 'disconnected':
+                    indicator.classList.add('status-disconnected');
+                    break;
+                case 'connecting':
+                    indicator.classList.add('status-connecting');
+                    break;
+            }
+            
+            statusElement.querySelector('span:last-child').textContent = message;
+        }
+
+        function updateESP32Buttons(connected) {
+            const connectBtn = document.getElementById('connectESP32Button');
+            const disconnectBtn = document.getElementById('disconnectESP32Button');
+            
+            if (connected) {
+                connectBtn.style.display = 'none';
+                disconnectBtn.style.display = 'inline-block';
+            } else {
+                connectBtn.style.display = 'inline-block';
+                disconnectBtn.style.display = 'none';
+            }
+        }
+
+        function sendColorToESP32(r, g, b) {
+            if (!isWebSocketConnected || !websocket) {
+                console.log('WebSocket not connected, cannot send color');
+                return;
+            }
+
+            // Create color message in format "COLOR:R:G:B"
+            const colorMessage = `COLOR:${r}:${g}:${b}`;
+            
+            // Only send if color has changed
+            if (lastSentColor !== colorMessage) {
+                websocket.send(colorMessage);
+                console.log('Sent color to ESP32:', colorMessage);
+                lastSentColor = colorMessage;
+            }
+        }
+
+        // Modified color change handler
+        function handleColorChange() {
+            const currentColor = handState.colors[handState.currentColorIndex];
+            if (currentColor) {
+                // Convert from 0-1 to 0-255 range for ESP32
+                const r = Math.round(currentColor.rgb[0] * 255);
+                const g = Math.round(currentColor.rgb[1] * 255);
+                const b = Math.round(currentColor.rgb[2] * 255);
+                
+                // Send color to ESP32
+                sendColorToESP32(r, g, b);
+            }
+        }
+        
+        window.addEventListener('load', function() {
+            checkCompatibility();
+            // Don't auto-connect on load anymore - wait for button click
+        });
+        
+        // ESP32 Connection Buttons
+        document.getElementById('connectESP32Button').addEventListener('click', function() {
+            connectWebSocket();
+        });
+        
+        document.getElementById('disconnectESP32Button').addEventListener('click', function() {
+            disconnectWebSocket();
+        });
+        
+        document.querySelector('.mobile-menu').addEventListener('click', function() {
+            document.querySelector('.nav-links').classList.toggle('active');
+        });
+
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    document.querySelector('.nav-links').classList.remove('active');
+                }
+            });
+        });
+
+        const videoElement = document.getElementById('webcam');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const sphereCanvas = document.getElementById('sphereCanvas');
+        const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
+        const loadingElement = document.getElementById('loading');
+        const demoContainer = document.getElementById('demoContainer');
+        const inactiveOverlay = document.getElementById('inactiveOverlay');
+        
+        const handState = {
+            leftDist: 50,
+            leftTouch: false,
+            running: true,
+            currentColorIndex: 0,
+            sphereRadius: 1.0,
+            targetRadius: 1.0,
+            rightRotationY: 0.0,
+            rightRotationX: 0.0,
+            targetRotY: 0.0,
+            targetRotX: 0.0,
+     colors: [
+    { name: "Red", rgb: [1.0, 0.0, 0.0] },
+    { name: "Green", rgb: [0.0, 1.0, 0.0] },
+    { name: "Blue", rgb: [0.0, 0.0, 1.0] },
+    { name: "Cyan", rgb: [0.0, 1.0, 1.0] },
+    { name: "Magenta", rgb: [1.0, 0.0, 1.0] },
+    { name: "Yellow", rgb: [1.0, 1.0, 0.0] },
+    { name: "Orange", rgb: [1.0, 0.5, 0.0] },
+    { name: "Pink", rgb: [1.0, 0.5, 0.5] },
+    { name: "Purple", rgb: [0.5, 0.0, 0.5] },
+    { name: "Lime", rgb: [0.5, 1.0, 0.0] },
+    { name: "Teal", rgb: [0.0, 0.5, 0.5] },
+    { name: "White", rgb: [1.0, 1.0, 1.0] },
+    
+    // 5 new colors added below
+    { name: "Gold", rgb: [1.0, 0.84, 0.0] },
+    { name: "Silver", rgb: [0.75, 0.75, 0.75] },
+    { name: "Coral", rgb: [1.0, 0.5, 0.31] },
+    { name: "Lavender", rgb: [0.71, 0.49, 0.86] },
+    { name: "Mint", rgb: [0.6, 1.0, 0.8] }
+]
+        };
+
+        let scene, camera, renderer, sphere;
+        let cameraInstance = null;
+        let animationId = null;
+        
+        function initThreeJS() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(60, sphereCanvas.clientWidth / sphereCanvas.clientHeight, 0.1, 100.0);
+            camera.position.set(0, 0, 8);
+            camera.lookAt(0, 0, 0);
+            
+            renderer = new THREE.WebGLRenderer({ 
+                canvas: sphereCanvas, 
+                antialias: true,
+                alpha: true 
+            });
+            renderer.setSize(sphereCanvas.clientWidth, sphereCanvas.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setClearColor(0x000000, 0);
+            
+            const geometry = generateWireframeSphere(32, 32);
+            const material = new THREE.LineBasicMaterial({ 
+                color: new THREE.Color().fromArray(handState.colors[handState.currentColorIndex].rgb),
+                linewidth: 1
+            });
+            sphere = new THREE.LineSegments(geometry, material);
+            scene.add(sphere);
+            
+            // Send initial color to ESP32 if connected
+            handleColorChange();
+            
+            animateSphere();
+        }
+        
+        function generateWireframeSphere(latSteps = 32, lonSteps = 32) {
+            const vertices = [];
+            const indices = [];
+            
+            for (let i = 0; i <= latSteps; i++) {
+                const theta = Math.PI * i / latSteps;
+                const sinTheta = Math.sin(theta);
+                const cosTheta = Math.cos(theta);
+                
+                for (let j = 0; j <= lonSteps; j++) {
+                    const phi = 2 * Math.PI * j / lonSteps;
+                    const sinPhi = Math.sin(phi);
+                    const cosPhi = Math.cos(phi);
+                    
+                    const x = sinTheta * cosPhi;
+                    const y = cosTheta;
+                    const z = sinTheta * sinPhi;
+                    
+                    vertices.push(x, y, z);
+                }
+            }
+            
+            for (let i = 0; i < latSteps; i++) {
+                for (let j = 0; j < lonSteps; j++) {
+                    const a = i * (lonSteps + 1) + j;
+                    const b = a + 1;
+                    const c = a + (lonSteps + 1);
+                    indices.push(a, b);
+                    indices.push(a, c);
+                }
+            }
+            
+            const geometry = new THREE.BufferGeometry();
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setIndex(indices);
+            return geometry;
+        }
+        
+        function animateSphere() {
+            if (!handState.running) return;
+            
+            animationId = requestAnimationFrame(animateSphere);
+            handState.sphereRadius += (handState.targetRadius - handState.sphereRadius) * 0.1;
+            handState.rightRotationY += (handState.targetRotY - handState.rightRotationY) * 0.1;
+            handState.rightRotationX += (handState.targetRotX - handState.rightRotationX) * 0.1;
+            sphere.scale.setScalar(handState.sphereRadius);
+            sphere.rotation.y = handState.rightRotationY;
+            sphere.rotation.x = handState.rightRotationX;
+            sphere.material.color.fromArray(handState.colors[handState.currentColorIndex].rgb);
+            document.getElementById('radiusValue').textContent = handState.sphereRadius.toFixed(2);
+            document.getElementById('rotationXValue').textContent = (handState.rightRotationX * 180 / Math.PI).toFixed(1) + '°';
+            document.getElementById('rotationYValue').textContent = (handState.rightRotationY * 180 / Math.PI).toFixed(1) + '°';
+            document.getElementById('colorValue').textContent = handState.colors[handState.currentColorIndex].name;
+            renderer.render(scene, camera);
+        }
+        
+        const hands = new Hands({
+            locateFile: (file) => {
+                return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+            }
+        });
+        
+        hands.setOptions({
+            maxNumHands: 2,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.7,
+            minTrackingConfidence: 0.5
+        });
+        
+        hands.onResults(onResults);
+        
+        function onResults(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            
+            if (results.multiHandLandmarks && results.multiHandedness) {
+                const centerX = canvasElement.width / 2;
+                const centerY = canvasElement.height / 2;
+                canvasCtx.beginPath();
+                canvasCtx.arc(centerX, centerY, 60, 0, 2 * Math.PI);
+                canvasCtx.strokeStyle = 'rgba(0, 245, 255, 0.5)';
+                canvasCtx.lineWidth = 2;
+                canvasCtx.stroke();
+                
+                let leftDist = null;
+                let leftTouch = false;
+                let rotY = null;
+                let rotX = null;
+                
+                for (let i = 0; i < results.multiHandLandmarks.length; i++) {
+                    const landmarks = results.multiHandLandmarks[i];
+                    const handedness = results.multiHandedness[i];
+                    drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, { color: '#00FF00', lineWidth: 2 });
+                    drawLandmarks(canvasCtx, landmarks, { color: '#FF0000', lineWidth: 1 });
+                    
+                    const thumb = landmarks[4];
+                    const index = landmarks[8];
+                    const middle = landmarks[12];
+                    
+                    const thumbX = thumb.x * canvasElement.width;
+                    const thumbY = thumb.y * canvasElement.height;
+                    const indexX = index.x * canvasElement.width;
+                    const indexY = index.y * canvasElement.height;
+                    const middleX = middle.x * canvasElement.width;
+                    const middleY = middle.y * canvasElement.height;
+                    
+                    const isLeftHand = handedness.label === "Right";
+                    
+                    if (isLeftHand) {
+                        leftDist = Math.hypot(thumbX - indexX, thumbY - indexY);
+                        canvasCtx.beginPath();
+                        canvasCtx.moveTo(thumbX, thumbY);
+                        canvasCtx.lineTo(indexX, indexY);
+                        canvasCtx.strokeStyle = 'rgba(255, 0, 0, 1)';
+                        canvasCtx.lineWidth = 3;
+                        canvasCtx.stroke();
+                        
+                        canvasCtx.beginPath();
+                        canvasCtx.arc(thumbX, thumbY, 8, 0, 2 * Math.PI);
+                        canvasCtx.fillStyle = 'rgba(255, 0, 0, 1)';
+                        canvasCtx.fill();
+                        
+                        canvasCtx.beginPath();
+                        canvasCtx.arc(indexX, indexY, 8, 0, 2 * Math.PI);
+                        canvasCtx.fillStyle = 'rgba(255, 0, 0, 1)';
+                        canvasCtx.fill();
+                        
+                        canvasCtx.fillStyle = 'rgba(255, 0, 0, 1)';
+                        canvasCtx.font = '16px Arial';
+                        canvasCtx.fillText(`L-Pinch: ${Math.round(leftDist)}`, 10, 100);
+                        
+                        if (Math.hypot(middleX - centerX, middleY - centerY) < 60) {
+                            leftTouch = true;
+                            canvasCtx.beginPath();
+                            canvasCtx.arc(middleX, middleY, 12, 0, 2 * Math.PI);
+                            canvasCtx.fillStyle = 'rgba(0, 255, 0, 1)';
+                            canvasCtx.fill();
+                            
+                            canvasCtx.fillStyle = 'rgba(0, 255, 0, 1)';
+                            canvasCtx.font = '16px Arial';
+                            canvasCtx.fillText("COLOR TOUCH!", middleX + 15, middleY);
+                        } else {
+                            leftTouch = false;
+                            canvasCtx.beginPath();
+                            canvasCtx.arc(middleX, middleY, 10, 0, 2 * Math.PI);
+                            canvasCtx.fillStyle = 'rgba(0, 255, 0, 1)';
+                            canvasCtx.fill();
+                        }
+                    } else {
+                        rotY = ((thumbX - canvasElement.width / 2) / (canvasElement.width / 2)) * (Math.PI / 2);
+                        rotX = ((thumbY - canvasElement.height / 2) / (canvasElement.height / 2)) * (Math.PI / 2);
+                        
+                        canvasCtx.beginPath();
+                        canvasCtx.arc(thumbX, thumbY, 10, 0, 2 * Math.PI);
+                        canvasCtx.fillStyle = 'rgba(0, 245, 255, 0.8)';
+                        canvasCtx.fill();
+                        
+                        canvasCtx.fillStyle = 'rgba(0, 245, 255, 0.8)';
+                        canvasCtx.font = '16px Arial';
+                        canvasCtx.fillText(`Rotation Control`, thumbX + 15, thumbY);
+                    }
+                }
+                
+                if (leftDist !== null) {
+                    handState.targetRadius = Math.max(0.5, Math.min(2.5, (leftDist - 20) / 40 + 0.5));
+                }
+                
+                if (rotY !== null && rotX !== null) {
+                    handState.targetRotY = rotY;
+                    handState.targetRotX = rotX;
+                }
+                
+                if (leftTouch && !handState.leftTouch) {
+                    handState.currentColorIndex = (handState.currentColorIndex + 1) % handState.colors.length;
+                    // Send color change to ESP32
+                    handleColorChange();
+                }
+                
+                handState.leftTouch = leftTouch;
+            }
+            
+            canvasCtx.restore();
+        }
+        
+        startButton.addEventListener('click', () => {
+            loadingElement.style.display = 'block';
+            demoContainer.style.display = 'flex';
+            startButton.style.display = 'none';
+            stopButton.style.display = 'inline-block';
+            inactiveOverlay.style.display = 'none';
+            
+            canvasElement.width = 900;
+            canvasElement.height = 500;
+            sphereCanvas.width = 900;
+            sphereCanvas.height = 500;
+            
+            initThreeJS();
+            
+            cameraInstance = new Camera(videoElement, {
+                onFrame: async () => {
+                    await hands.send({ image: videoElement });
+                },
+                width: 900,
+                height: 500
+            });
+            
+            cameraInstance.start()
+                .then(() => {
+                    loadingElement.style.display = 'none';
+                })
+                .catch((error) => {
+                    console.error('Error starting camera:', error);
+                    loadingElement.innerHTML = '<p>Error starting camera. Please make sure you have a webcam connected and have granted permission.</p>';
+                });
+        });
+        
+        stopButton.addEventListener('click', () => {
+            if (cameraInstance) {
+                cameraInstance.stop();
+                cameraInstance = null;
+            }
+            
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            if (renderer) {
+                renderer.clear();
+            }
+            
+            startButton.style.display = 'inline-block';
+            stopButton.style.display = 'none';
+            inactiveOverlay.style.display = 'flex';
+            
+            handState.targetRadius = 1.0;
+            handState.sphereRadius = 1.0;
+            handState.targetRotY = 0.0;
+            handState.targetRotX = 0.0;
+            handState.rightRotationY = 0.0;
+            handState.rightRotationX = 0.0;
+            handState.currentColorIndex = 0;
+            
+            document.getElementById('radiusValue').textContent = handState.sphereRadius.toFixed(2);
+            document.getElementById('rotationXValue').textContent = (handState.rightRotationX * 180 / Math.PI).toFixed(1) + '°';
+            document.getElementById('rotationYValue').textContent = (handState.rightRotationY * 180 / Math.PI).toFixed(1) + '°';
+            document.getElementById('colorValue').textContent = handState.colors[handState.currentColorIndex].name;
+        });
+        
+        window.addEventListener('resize', () => {
+            if (renderer && camera) {
+                camera.aspect = sphereCanvas.clientWidth / sphereCanvas.clientHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(sphereCanvas.clientWidth, sphereCanvas.clientHeight);
+            }
+        });
+    </script>
+</body>
+</html>
